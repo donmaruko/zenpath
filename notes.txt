@@ -1,0 +1,40 @@
+fullstack
+    - client
+        - node_modules
+        - public
+        - src
+            - assets
+            App.css
+            App.jsx
+            index.css
+            main.jsx
+        .gitignore
+        eslient.config.js
+        index.html
+        package-lock.json
+        package.json
+        README.md
+        vite.config.js
+    - server
+        - node_modules
+        package-lock.json
+        package.json
+        server.js
+
+
+
+vite frontend, backend server w/ API route and necessary dependencies
+json and cors on backend to accept requests from backend
+axios on frontend to send requests to backend by creating a fetchAPI function running on initial render of the component,
+then set the array state variable by useState with the fruits test sample from the backend
+after API fetching, use the state variable to display the fruits on the webpage by mapping every element
+of the array into a div tag containing the p tag which displayed the fruit
+
+
+
+backend server folder -> npm run dev
+frontend client folder -> npm run dev
+
+http://localhost:5173/
+http://localhost:8080/api/tasks
+to check the current tasks as they are being arranged
