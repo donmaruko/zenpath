@@ -42,6 +42,7 @@ of the array into a div tag containing the p tag which displayed the fruit
 backend server folder -> npm run dev
 frontend client folder -> npm run dev
 
+urls:
 http://localhost:5173/
 http://localhost:8080/api/tasks
 to check the current tasks as they are being arranged
