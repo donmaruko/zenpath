@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
@@ -14,7 +15,7 @@ function App() {
   const [editingIndex, setEditingIndex] = useState(null); // track which task is being edited, null if none
   const [editTaskName, setEditTaskName] = useState(""); // hold the new task name for editing
 
-  const fetchAPI = async () => {
+  const fetchAPI = async () => { // part of testing
     const response = await axios.get("http://localhost:8080/api");
     setArray(response.data.fruits);
     console.log(response.data.fruits);
@@ -41,23 +42,16 @@ function App() {
     setTasks(response.data.tasks);
   };
 
-  // helper function to reset editing state
-  const resetEditingState = () => {
-    setEditingIndex(null);
-    setEditTaskName("");
-  } // we do this to avoid having to write the same code in multiple places
-
   // rename and edit a task
   const renameTask = async (index, newName) => {
     if (newName.trim() === "") {
         alert("Task name cannot be empty.");
         return;
     }
-    const response = await axios.put(`http://localhost:8080/api/tasks/${index}`, {
-        task: newName,
-    });
+    const response = await axios.put(`http://localhost:8080/api/tasks/${index}`, { task: newName });
     setTasks(response.data.tasks);
-    resetEditingState();
+    setEditingIndex(null);
+    setEditTaskName("");
   };
 
   // fetch tasks when the component mounts (on page load/refresh)
@@ -68,8 +62,6 @@ function App() {
   return (
     <div>
       <h1>ZenPath</h1>
-
-      {/* the input for adding new tasks */}
       <input
         type="text"
         value={newTask}

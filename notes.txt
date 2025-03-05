@@ -1,3 +1,5 @@
+codebase and directories:
+
 fullstack
     - client
         - node_modules
@@ -20,8 +22,13 @@ fullstack
         package-lock.json
         package.json
         server.js
-
-
+        tasks.json
+    - .gitignore
+    - notes.txt
+    - package-lock.json
+    - package.json
+    - plan.txt
+    - README.md
 
 vite frontend, backend server w/ API route and necessary dependencies
 json and cors on backend to accept requests from backend

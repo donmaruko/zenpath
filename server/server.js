@@ -1,8 +1,10 @@
 const express = require("express");
-const app = express();
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
+
+const app = express();
+
 const corsOptions = {
   origin: ["http://localhost:5173"],
 };
@@ -12,7 +14,7 @@ app.use(express.json());  // parse JSON data
 
 const tasksFilePath = path.join(__dirname, "tasks.json");
 
-app.get("/api", (req, res) => {
+app.get("/api", (req, res) => { // tester
   res.json({ fruits: ["apple", "yoyoyo", "pineapple"] });
 });
 
@@ -28,9 +30,10 @@ const readTasks = () => {
 
 // write tasks to the file
 const writeTasks = (tasks) => {
-  const data = JSON.stringify({ tasks });
-  fs.writeFileSync(tasksFilePath, data, "utf8");
+  console.log("Writing to tasks.json:", tasks);
+  fs.writeFileSync(tasksFilePath, JSON.stringify({ tasks }, null, 2), "utf8");
 };
+
 
 // get all tasks
 app.get("/api/tasks", (req, res) => {
