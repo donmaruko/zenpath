@@ -24,7 +24,7 @@ const readTasks = () => {
     const data = fs.readFileSync(tasksFilePath, "utf8");
     return JSON.parse(data).tasks;
   } catch (err) {
-    return [];  // if no file exists, return an empty array
+    return [];
   }
 };
 
@@ -45,7 +45,7 @@ app.get("/api/tasks", (req, res) => {
 app.post("/api/tasks", (req, res) => {
   const { task } = req.body;
   const tasks = readTasks();
-  tasks.push(task);
+  tasks.push({ text: task, pinned: false });
   writeTasks(tasks);
   res.status(201).json({ tasks });
 });
@@ -64,7 +64,17 @@ app.put("/api/tasks/:index", (req, res) => {
   const { index } = req.params;
   const { task } = req.body;
   const tasks = readTasks();
-  tasks[index] = task;
+  tasks[index].text = task;
+  writeTasks(tasks);
+  res.json({ tasks });
+});
+
+
+// toggle pinning a task
+app.put("/api/tasks/:index/pin", (req, res) => {
+  const { index } = req.params;
+  const tasks = readTasks();
+  tasks[index].pinned = !tasks[index].pinned; // toggle pinned status
   writeTasks(tasks);
   res.json({ tasks });
 });

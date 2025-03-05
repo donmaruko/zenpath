@@ -54,6 +54,12 @@ function App() {
     setEditTaskName("");
   };
 
+  // toggle pin/unpin task
+  const togglePinTask = async (index) => {
+    const response = await axios.put(`http://localhost:8080/api/tasks/${index}/pin`);
+    setTasks(response.data.tasks);
+  };
+
   // fetch tasks when the component mounts (on page load/refresh)
   useEffect(() => {
       fetchTasks();
@@ -70,6 +76,24 @@ function App() {
       />
       <button onClick={addTask}>Add Task</button>
 
+      {/* Pinned Tasks Section */}
+      {tasks.some((task) => task.pinned) && (
+        <>
+          <h2>Pinned Tasks</h2>
+          <ul>
+            {tasks
+              .filter((task) => task.pinned)
+              .map((task, index) => (
+                <li key={index}>
+                  <span>{task.text}</span>
+                  <button onClick={() => togglePinTask(index)}>Unpin</button>
+                </li>
+              ))}
+          </ul>
+        </>
+      )}
+
+      <h2>All Tasks</h2>
       <ul>
         {tasks.map((task, index) => (
           <li key={index}>
@@ -85,10 +109,13 @@ function App() {
               </>
             ) : (
               <>
-                <span>{task}</span>
+                <span>{task.text}</span>
+                <button onClick={() => togglePinTask(index)}>
+                  {task.pinned ? "Unpin" : "Pin"}
+                </button>
                 <button onClick={() => {
                   setEditingIndex(index);
-                  setEditTaskName(task);
+                  setEditTaskName(task.text);
                 }}>Edit</button>
                 <button onClick={() => deleteTask(index)}>Delete</button>
               </>

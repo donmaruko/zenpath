@@ -1,8 +1,16 @@
 {
   "tasks": [
-    "hey judedsds",
-    "dont make it bad",
-    "take a sad song",
-    "and make it better"
+    {
+      "text": "yo",
+      "pinned": false
+    },
+    {
+      "text": "dwa",
+      "pinned": false
+    },
+    {
+      "text": "dsadsa",
+      "pinned": false
+    }
   ]
 }
