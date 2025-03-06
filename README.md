@@ -7,7 +7,7 @@ ZenPath is a **productivity tool** that helps users **track skills, manage tasks
 ## 🚀 Features
 
 - **Task Management:** Add, edit, delete, and pin tasks.
-- **Drag-and-Drop Reordering:** Easily organize tasks dynamically.
+- **Reordering:** Easily organize tasks dynamically.
 - **Pinned Tasks:** Keep high-priority tasks at the top.
 - **Task Categories & Tags:** Categorize tasks by priority, project, or custom labels.
 - **Recurring Tasks:** Support for daily, weekly, or custom recurrence options.

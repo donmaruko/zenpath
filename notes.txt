@@ -19,10 +19,10 @@ fullstack
         vite.config.js
     - server
         - node_modules
+        .env
         package-lock.json
         package.json
         server.js
-        tasks.json
     - .gitignore
     - notes.txt
     - package-lock.json

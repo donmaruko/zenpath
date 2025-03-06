@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
@@ -15,6 +14,10 @@ function App() {
   const [editingIndex, setEditingIndex] = useState(null); // track which task is being edited, null if none
   const [editTaskName, setEditTaskName] = useState(""); // hold the new task name for editing
 
+  const [selectedCategory, setSelectedCategory] = useState(""); // Category selection
+  const [customCategory, setCustomCategory] = useState(""); // User inputted category
+  const categories = ["Work", "Personal", "Study", "Custom"]; // Default categories
+
   const fetchAPI = async () => { // part of testing
     const response = await axios.get("http://localhost:8080/api");
     setArray(response.data.fruits);
@@ -29,10 +32,19 @@ function App() {
 
   // add a new task
   const addTask = async () => {
-    const response = await axios.post("http://localhost:8080/api/tasks", { task: newTask });
-    setTasks([...tasks, response.data.task]); // Append new task to list
+    const categoryToUse = selectedCategory === "Custom" ? customCategory : selectedCategory;
+    if (!newTask.trim()) return alert("Task cannot be empty!");
+  
+    const response = await axios.post("http://localhost:8080/api/tasks", { 
+      task: newTask, 
+      category: categoryToUse 
+    });
+  
+    setTasks([...tasks, response.data.task]);
     setNewTask("");
-  };
+    setSelectedCategory(""); 
+    setCustomCategory("");
+  };  
 
   // delete a task
   const deleteTask = async (id) => {
@@ -75,6 +87,25 @@ function App() {
         onChange={(e) => setNewTask(e.target.value)}
         placeholder="New task"
       />
+
+      {/* Category Dropdown */}
+      <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+        <option value="">Select Category</option>
+        {categories.map((cat) => (
+          <option key={cat} value={cat}>{cat}</option>
+        ))}
+      </select>
+
+      {/* Custom Category Input */}
+      {selectedCategory === "Custom" && (
+        <input
+          type="text"
+          value={customCategory}
+          onChange={(e) => setCustomCategory(e.target.value)}
+          placeholder="Enter custom category"
+        />
+      )}
+
       <button onClick={addTask}>Add Task</button>
 
       {/* Pinned Tasks Section */}
@@ -84,10 +115,10 @@ function App() {
           <ul>
             {tasks
               .filter((task) => task.pinned)
-              .map((task, index) => (
-                <li key={index}>
+              .map((task) => (
+                <li key={task._id}>
                   <span>{task.text}</span>
-                  <button onClick={() => togglePinTask(index)}>Unpin</button>
+                  <button onClick={() => togglePinTask(task._id)}>Unpin</button>
                 </li>
               ))}
           </ul>
@@ -110,7 +141,7 @@ function App() {
               </>
             ) : (
               <>
-                <span>{task.text}</span>
+                <span>{task.text} - <strong>{task.category}</strong></span>
                 <button onClick={() => togglePinTask(task._id)}>
                   {task.pinned ? "Unpin" : "Pin"}
                 </button>
@@ -124,9 +155,22 @@ function App() {
           </li>
         ))}
       </ul>
-
     </div>
   );
 }
+
+/*
+<ul>
+  {tasks.map((task) => (
+    <li key={task._id}>
+      <span>{task.text} - <strong>{task.category}</strong></span>
+      <button onClick={() => togglePinTask(task._id)}>
+        {task.pinned ? "Unpin" : "Pin"}
+      </button>
+      <button onClick={() => deleteTask(task._id)}>Delete</button>
+    </li>
+  ))}
+</ul>
+*/
 
 export default App;

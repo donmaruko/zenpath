@@ -27,7 +27,9 @@ mongoose
 const taskSchema = new mongoose.Schema({
   text: String,
   pinned: { type: Boolean, default: false },
+  category: { type: String, default: "Uncategorized" },
 });
+
 
 const Task = mongoose.model("Task", taskSchema);
 
@@ -46,8 +48,8 @@ app.get("/api/tasks", async (req, res) => {
 // Add a new task
 app.post("/api/tasks", async (req, res) => {
   try {
-    const { task } = req.body;
-    const newTask = new Task({ text: task });
+    const { task, category } = req.body;
+    const newTask = new Task({ text: task, category: category || "Uncategorized" });
     await newTask.save();
     res.status(201).json({ message: "Task added", task: newTask });
   } catch (err) {
@@ -88,6 +90,17 @@ app.put("/api/tasks/:id/pin", async (req, res) => {
     res.json({ message: "Pin status toggled", task });
   } catch (err) {
     res.status(500).json({ error: "Error toggling pin status" });
+  }
+});
+
+app.put("/api/tasks/:id/category", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { category } = req.body;
+    const updatedTask = await Task.findByIdAndUpdate(id, { category }, { new: true });
+    res.json({ message: "Task category updated", task: updatedTask });
+  } catch (err) {
+    res.status(500).json({ error: "Error updating task category" });
   }
 });
 
