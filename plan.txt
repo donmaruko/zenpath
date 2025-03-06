@@ -1,6 +1,8 @@
 interactive dashboard
 
 - drag and drop task reordering for flexibility in organization
-- pinned tasks for prioritization
 - task categories and tags, organize by priority, project, or custom labels
 - recurring tasks, supporting daily, weekly, or custom recurrence options
+
+- use mongodb or postgresql rather than in memory storage
+- sync with google calendar / notion 

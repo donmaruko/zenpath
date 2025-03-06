@@ -29,37 +29,34 @@ function App() {
 
   // add a new task
   const addTask = async () => {
-    const response = await axios.post("http://localhost:8080/api/tasks", {
-      task: newTask,
-    });
-    setTasks(response.data.tasks);
-    setNewTask("");  // clear input field
+    const response = await axios.post("http://localhost:8080/api/tasks", { task: newTask });
+    setTasks([...tasks, response.data.task]); // Append new task to list
+    setNewTask("");
   };
 
   // delete a task
-  const deleteTask = async (index) => {
-    const response = await axios.delete(`http://localhost:8080/api/tasks/${index}`);
-    setTasks(response.data.tasks);
-  };
-
+  const deleteTask = async (id) => {
+    await axios.delete(`http://localhost:8080/api/tasks/${id}`);
+    setTasks(tasks.filter((task) => task._id !== id)); // Correct filtering
+  };  
+  
   // rename and edit a task
-  const renameTask = async (index, newName) => {
+  const renameTask = async (id, newName) => {
     if (newName.trim() === "") {
-        alert("Task name cannot be empty.");
-        return;
+      alert("Task name cannot be empty.");
+      return;
     }
-    const response = await axios.put(`http://localhost:8080/api/tasks/${index}`, { task: newName });
-    setTasks(response.data.tasks);
-    setEditingIndex(null);
-    setEditTaskName("");
+    const response = await axios.put(`http://localhost:8080/api/tasks/${id}`, { task: newName });
+    setTasks(tasks.map((task) => (task._id === id ? response.data.task : task)));
   };
+  
 
   // toggle pin/unpin task
-  const togglePinTask = async (index) => {
-    const response = await axios.put(`http://localhost:8080/api/tasks/${index}/pin`);
-    setTasks(response.data.tasks);
-  };
-
+  const togglePinTask = async (id) => {
+    const response = await axios.put(`http://localhost:8080/api/tasks/${id}/pin`);
+    setTasks(tasks.map((task) => (task._id === id ? response.data.task : task)));
+  };  
+  
   // fetch tasks when the component mounts (on page load/refresh)
   useEffect(() => {
       fetchTasks();
@@ -95,34 +92,35 @@ function App() {
 
       <h2>All Tasks</h2>
       <ul>
-        {tasks.map((task, index) => (
-          <li key={index}>
-            {editingIndex === index ? (
+        {tasks.map((task) => (
+          <li key={task._id}>
+            {editingIndex === task._id ? (
               <>
                 <input
                   type="text"
                   value={editTaskName}
                   onChange={(e) => setEditTaskName(e.target.value)}
                 />
-                <button onClick={() => renameTask(index, editTaskName)}>Save</button>
+                <button onClick={() => renameTask(task._id, editTaskName)}>Save</button>
                 <button onClick={() => setEditingIndex(null)}>Cancel</button>
               </>
             ) : (
               <>
                 <span>{task.text}</span>
-                <button onClick={() => togglePinTask(index)}>
+                <button onClick={() => togglePinTask(task._id)}>
                   {task.pinned ? "Unpin" : "Pin"}
                 </button>
                 <button onClick={() => {
-                  setEditingIndex(index);
+                  setEditingIndex(task._id);
                   setEditTaskName(task.text);
                 }}>Edit</button>
-                <button onClick={() => deleteTask(index)}>Delete</button>
+                <button onClick={() => deleteTask(task._id)}>Delete</button>
               </>
             )}
           </li>
         ))}
       </ul>
+
     </div>
   );
 }

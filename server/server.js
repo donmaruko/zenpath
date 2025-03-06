@@ -1,84 +1,97 @@
 const express = require("express");
-const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
+const mongoose = require("mongoose");
+
+require("dotenv").config();
 
 const app = express();
+const PORT = process.env.PORT || 8080;
+const MONGO_URI = process.env.MONGO_URI;
 
 const corsOptions = {
   origin: ["http://localhost:5173"],
 };
 
-app.use(cors(corsOptions));
-app.use(express.json());  // parse JSON data
+// Middleware
+app.use(cors({ origin: ["http://localhost:5173"] }));
+app.use(express.json());
 
-const tasksFilePath = path.join(__dirname, "tasks.json");
+// Connect to MongoDB
+mongoose
+  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
-app.get("/api", (req, res) => { // tester
-  res.json({ fruits: ["apple", "yoyoyo", "pineapple"] });
+// Define Task Schema and Model
+const taskSchema = new mongoose.Schema({
+  text: String,
+  pinned: { type: Boolean, default: false },
 });
 
-// read tasks from the file
-const readTasks = () => {
+const Task = mongoose.model("Task", taskSchema);
+
+// Routes
+
+// Get all tasks
+app.get("/api/tasks", async (req, res) => {
   try {
-    const data = fs.readFileSync(tasksFilePath, "utf8");
-    return JSON.parse(data).tasks;
+    const tasks = await Task.find();
+    res.json({ tasks });
   } catch (err) {
-    return [];
+    res.status(500).json({ error: "Error fetching tasks" });
   }
-};
-
-// write tasks to the file
-const writeTasks = (tasks) => {
-  console.log("Writing to tasks.json:", tasks);
-  fs.writeFileSync(tasksFilePath, JSON.stringify({ tasks }, null, 2), "utf8");
-};
-
-
-// get all tasks
-app.get("/api/tasks", (req, res) => {
-  const tasks = readTasks();
-  res.json({ tasks });
 });
 
-// aDd a new task
-app.post("/api/tasks", (req, res) => {
-  const { task } = req.body;
-  const tasks = readTasks();
-  tasks.push({ text: task, pinned: false });
-  writeTasks(tasks);
-  res.status(201).json({ tasks });
+// Add a new task
+app.post("/api/tasks", async (req, res) => {
+  try {
+    const { task } = req.body;
+    const newTask = new Task({ text: task });
+    await newTask.save();
+    res.status(201).json({ message: "Task added", task: newTask });
+  } catch (err) {
+    res.status(500).json({ error: "Error adding task" });
+  }
 });
 
-// delete a task
-app.delete("/api/tasks/:index", (req, res) => {
-  const { index } = req.params;
-  const tasks = readTasks();
-  tasks.splice(index, 1);
-  writeTasks(tasks);
-  res.json({ tasks });
+// Delete a task
+app.delete("/api/tasks/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Task.findByIdAndDelete(id);
+    res.json({ message: "Task deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Error deleting task" });
+  }
 });
 
-// rename a task
-app.put("/api/tasks/:index", (req, res) => {
-  const { index } = req.params;
-  const { task } = req.body;
-  const tasks = readTasks();
-  tasks[index].text = task;
-  writeTasks(tasks);
-  res.json({ tasks });
+// Rename a task
+app.put("/api/tasks/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { task } = req.body;
+    const updatedTask = await Task.findByIdAndUpdate(id, { text: task }, { new: true });
+    res.json({ message: "Task updated", task: updatedTask });
+  } catch (err) {
+    res.status(500).json({ error: "Error updating task" });
+  }
 });
 
-
-// toggle pinning a task
-app.put("/api/tasks/:index/pin", (req, res) => {
-  const { index } = req.params;
-  const tasks = readTasks();
-  tasks[index].pinned = !tasks[index].pinned; // toggle pinned status
-  writeTasks(tasks);
-  res.json({ tasks });
+// Toggle pin status
+app.put("/api/tasks/:id/pin", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await Task.findById(id);
+    task.pinned = !task.pinned;
+    await task.save();
+    res.json({ message: "Pin status toggled", task });
+  } catch (err) {
+    res.status(500).json({ error: "Error toggling pin status" });
+  }
 });
 
-app.listen(8080, () => {
-  console.log("Server running on port 8080");
+// Start Server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
