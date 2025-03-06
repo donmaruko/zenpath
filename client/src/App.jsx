@@ -159,18 +159,4 @@ function App() {
   );
 }
 
-/*
-<ul>
-  {tasks.map((task) => (
-    <li key={task._id}>
-      <span>{task.text} - <strong>{task.category}</strong></span>
-      <button onClick={() => togglePinTask(task._id)}>
-        {task.pinned ? "Unpin" : "Pin"}
-      </button>
-      <button onClick={() => deleteTask(task._id)}>Delete</button>
-    </li>
-  ))}
-</ul>
-*/
-
 export default App;
