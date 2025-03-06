@@ -30,6 +30,7 @@ fullstack
     - plan.txt
     - README.md
 
+mongosh
 backend server folder -> npm run dev
 frontend client folder -> npm run dev
 
