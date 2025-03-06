@@ -46,11 +46,15 @@ function App() {
       alert("Task name cannot be empty.");
       return;
     }
+    
+    // Reset editing state immediately before making the API call
+    setEditingIndex(null);
+  
     const response = await axios.put(`http://localhost:8080/api/tasks/${id}`, { task: newName });
     setTasks(tasks.map((task) => (task._id === id ? response.data.task : task)));
+    setEditTaskName("");  // Clear the input field
   };
   
-
   // toggle pin/unpin task
   const togglePinTask = async (id) => {
     const response = await axios.put(`http://localhost:8080/api/tasks/${id}/pin`);
