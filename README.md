@@ -1,6 +1,6 @@
 # ZenPath - Productivity Tool
 
-ZenPath is a **productivity tool** that helps users **track skills, manage tasks, organize projects, and set goals** within a **unified dashboard**. Built with **React (Vite) for the frontend** and **Node.js with Express and MongoDB for the backend**, ZenPath offers task management features such as **drag-and-drop task reordering, pinned tasks, task categories, recurring tasks, and real-time task updates via WebSockets**. More features are to come!
+ZenPath is a **productivity tool** that helps users **track skills, manage tasks, organize projects, and set goals** within a **unified dashboard**. Built with **React (Vite) for the frontend** and **Node.js with Express and MongoDB for the backend**, ZenPath adheres to **Create, Read, Update, and Delete (CRUD)** operations and offers task management features such as **pinned tasks, task categories, and real-time task updates via WebSockets**. More features are to come!
 
 ---
 
