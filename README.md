@@ -1,6 +1,6 @@
 # ZenPath - Productivity Tool
 
-ZenPath is a **productivity tool** that helps users **track skills, manage tasks, organize projects, and set goals** within a **unified dashboard**. Built with **React (Vite) for the frontend** and **Node.js with Express and MongoDB for the backend**, ZenPath adheres to **Create, Read, Update, and Delete (CRUD)** operations and offers task management features such as **pinned tasks, task categories, and real-time task updates via WebSockets**. More features are to come!
+ZenPath is a **productivity tool** that helps users **track skills, manage tasks, organize projects, and set goals** within a **unified dashboard**. Written in **TypeScript** with **React (Vite) for the frontend** and **Node.js with Express and MongoDB for the backend**, ZenPath adheres to **Create, Read, Update, and Delete (CRUD)** operations and offers task management features such as **pinned tasks, task categories, and real-time task updates via WebSockets**. More features are to come!
 
 ---
 
@@ -40,7 +40,7 @@ npm install
   ```bash
   npm run dev
   ```
-  The backend will start at `http://localhost:8080/`
+  The backend will start at `http://localhost:8080/api/tasks`
 
 ### **3. Set Up the Frontend (Client)**
 ```bash
@@ -98,20 +98,19 @@ ZenPath supports **real-time task updates** using **WebSockets**. Tasks now sync
 ## 🛠️ Project Structure
 ```bash
 zenpath/
-│── client/      # Frontend React App (Vite)
+│── client/       # Frontend React App (Vite)
 │   ├── src/
 │   ├── public/
 │   ├── package.json
 │   └── vite.config.js
 │
-│── server/      # Backend Express API
+│── server/       # Backend Express API
 │   ├── server.js
-│   ├── models/
-│   ├── routes/
 │   ├── .env
 │   └── package.json
 │
-│── README.md   # Project Documentation
+│── README.md     # Project Documentation
+│── tsconfig.json # TypeScript Configuration
 ```
 
 ---
