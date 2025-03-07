@@ -3,15 +3,20 @@ const path = require("path");
 const cors = require("cors");
 const mongoose = require("mongoose");
 
+const http = require("http");
+const { Server } = require("socket.io");
+
 require("dotenv").config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:5173"],
+  },
+});
 const PORT = process.env.PORT || 8080;
 const MONGO_URI = process.env.MONGO_URI;
-
-const corsOptions = {
-  origin: ["http://localhost:5173"],
-};
 
 // Middleware
 app.use(cors({ origin: ["http://localhost:5173"] }));
@@ -33,12 +38,27 @@ const taskSchema = new mongoose.Schema({
 
 const Task = mongoose.model("Task", taskSchema);
 
+// WebSocket Connection Handling
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected:", socket.id);
+  });
+});
+
+// Broadcast tasks when changes happen
+const broadcastTasks = async () => {
+  const tasks = await Task.find().sort({ index: 1 });
+  io.emit("tasksUpdated", tasks);
+};
+
 // Routes
 
 // Get all tasks
 app.get("/api/tasks", async (req, res) => {
   try {
-    const tasks = await Task.find().sort({ index: 1 }); // Ensure tasks are sorted by index
+    const tasks = await Task.find().sort({ index: 1 });
     res.json({ tasks });
   } catch (err) {
     res.status(500).json({ error: "Error fetching tasks" });
@@ -49,13 +69,14 @@ app.get("/api/tasks", async (req, res) => {
 app.post("/api/tasks", async (req, res) => {
   try {
     const { task, category } = req.body;
-    const taskCount = await Task.countDocuments(); // Get the current number of tasks
-    const newTask = new Task({ 
-      text: task, 
-      category: category || "Uncategorized", 
-      index: taskCount  // Assign the next available index
+    const taskCount = await Task.countDocuments();
+    const newTask = new Task({
+      text: task,
+      category: category || "Uncategorized",
+      index: taskCount,
     });
     await newTask.save();
+    await broadcastTasks();
     res.status(201).json({ message: "Task added", task: newTask });
   } catch (err) {
     res.status(500).json({ error: "Error adding task" });
@@ -75,6 +96,7 @@ app.delete("/api/tasks/:id", async (req, res) => {
     const { id } = req.params;
     await Task.findByIdAndDelete(id);
     await reindexTasks(); // Reorder indices after deletion
+    await broadcastTasks();
     res.json({ message: "Task deleted and reindexed" });
   } catch (err) {
     res.status(500).json({ error: "Error deleting task" });
@@ -100,6 +122,7 @@ app.put("/api/tasks/:id", async (req, res) => {
     const { id } = req.params;
     const { task } = req.body;
     const updatedTask = await Task.findByIdAndUpdate(id, { text: task }, { new: true });
+    await broadcastTasks();
     res.json({ message: "Task updated", task: updatedTask });
   } catch (err) {
     res.status(500).json({ error: "Error updating task" });
@@ -130,7 +153,6 @@ app.put("/api/tasks/:id/category", async (req, res) => {
   }
 });
 
-// Start Server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

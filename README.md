@@ -1,17 +1,16 @@
 # ZenPath - Productivity Tool
 
-ZenPath is a **productivity tool** that helps users **track skills, manage tasks, organize projects, and set goals** within a **unified dashboard**. Built with **React (Vite) for the frontend** and **Node.js with Express and MongoDB for the backend**, ZenPath offerstask management features such as **drag-and-drop task reordering, pinned tasks, task categories, recurring tasks, and future third-party integrations**. More features are to come!
+ZenPath is a **productivity tool** that helps users **track skills, manage tasks, organize projects, and set goals** within a **unified dashboard**. Built with **React (Vite) for the frontend** and **Node.js with Express and MongoDB for the backend**, ZenPath offers task management features such as **drag-and-drop task reordering, pinned tasks, task categories, recurring tasks, and real-time task updates via WebSockets**. More features are to come!
 
 ---
 
 ## 🚀 Features
 
 - **Task Management:** Add, edit, delete, and pin tasks.
-- **Reordering:** Easily organize tasks dynamically.
 - **Pinned Tasks:** Keep high-priority tasks at the top.
 - **Task Categories & Tags:** Categorize tasks by priority, project, or custom labels.
-- **Recurring Tasks:** Support for daily, weekly, or custom recurrence options.
 - **MongoDB Integration:** Persistent storage for tasks.
+- **Real-Time Task Updates:** WebSockets ensure instant sync across multiple clients.
 - **REST API Backend:** Node.js and Express.js for seamless API communication.
 - **Vite + React Frontend:** Fast and responsive UI with Axios for API requests.
 
@@ -54,7 +53,21 @@ npm run dev
 
 ---
 
-## 🔥 API Endpoints
+## 🔥 Real-Time WebSockets Integration
+ZenPath supports **real-time task updates** using **WebSockets**. Tasks now sync across multiple clients when any task is added, edited, or deleted.
+
+### **WebSocket Setup**
+- The backend uses **Socket.io** to broadcast updates to all connected clients.
+- The frontend listens for `tasksUpdated` events and updates the UI dynamically.
+
+#### **WebSocket Events**
+| Event Name   | Description |
+|-------------|------------|
+| `tasksUpdated` | Broadcasts the latest tasks when any modification occurs |
+
+---
+
+## 🖥️ API Endpoints
 ### **Tasks API** (`/api/tasks`)
 | Method | Endpoint                  | Description            |
 |--------|---------------------------|------------------------|
@@ -71,12 +84,13 @@ npm run dev
 ### **Frontend:**
 - React (Vite)
 - Axios
-- @hello-pangea/dnd (Drag & Drop)
+- Socket.io-client (for WebSockets)
 - Tailwind CSS (Planned UI Enhancement)
 
 ### **Backend:**
 - Node.js + Express.js
 - MongoDB + Mongoose
+- Socket.io (for real-time communication)
 - CORS & dotenv
 
 ---
@@ -88,14 +102,14 @@ zenpath/
 │   ├── src/
 │   ├── public/
 │   ├── package.json
-│   ├── vite.config.js
+│   └── vite.config.js
 │
 │── server/      # Backend Express API
 │   ├── server.js
 │   ├── models/
 │   ├── routes/
 │   ├── .env
-│   ├── package.json
+│   └── package.json
 │
 │── README.md   # Project Documentation
 ```
@@ -107,10 +121,13 @@ zenpath/
 2. **Start the frontend (`npm run dev` in `client/`)**
 3. **Open `http://localhost:5173/` in your browser**
 4. **Manage tasks: Add, Edit, Delete, Pin, and Reorder!**
+5. **Open multiple tabs or devices and see changes in real time!**
 
 ---
 
 ## 🎯 Future Plans
+- **Drag-and-Drop Task Reordering**
+- **Recurring Tasks:** Support for daily, weekly, or custom recurrence options.
 - **Google Calendar & Notion Integration**
 - **Advanced Progress Tracking & Analytics**
 
