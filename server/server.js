@@ -28,8 +28,8 @@ const taskSchema = new mongoose.Schema({
   text: String,
   pinned: { type: Boolean, default: false },
   category: { type: String, default: "Uncategorized" },
+  index: { type: Number, unique: false } // 0-based index
 });
-
 
 const Task = mongoose.model("Task", taskSchema);
 
@@ -38,7 +38,7 @@ const Task = mongoose.model("Task", taskSchema);
 // Get all tasks
 app.get("/api/tasks", async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.find().sort({ index: 1 }); // Ensure tasks are sorted by index
     res.json({ tasks });
   } catch (err) {
     res.status(500).json({ error: "Error fetching tasks" });
@@ -49,7 +49,12 @@ app.get("/api/tasks", async (req, res) => {
 app.post("/api/tasks", async (req, res) => {
   try {
     const { task, category } = req.body;
-    const newTask = new Task({ text: task, category: category || "Uncategorized" });
+    const taskCount = await Task.countDocuments(); // Get the current number of tasks
+    const newTask = new Task({ 
+      text: task, 
+      category: category || "Uncategorized", 
+      index: taskCount  // Assign the next available index
+    });
     await newTask.save();
     res.status(201).json({ message: "Task added", task: newTask });
   } catch (err) {
@@ -57,16 +62,37 @@ app.post("/api/tasks", async (req, res) => {
   }
 });
 
-// Delete a task
+const reindexTasks = async () => {
+  const tasks = await Task.find().sort({ index: 1 }); // Get all tasks sorted
+  for (let i = 0; i < tasks.length; i++) {
+    tasks[i].index = i;  // Assign new index values
+    await tasks[i].save();
+  }
+};
+
 app.delete("/api/tasks/:id", async (req, res) => {
   try {
     const { id } = req.params;
     await Task.findByIdAndDelete(id);
-    res.json({ message: "Task deleted" });
+    await reindexTasks(); // Reorder indices after deletion
+    res.json({ message: "Task deleted and reindexed" });
   } catch (err) {
     res.status(500).json({ error: "Error deleting task" });
   }
 });
+
+const updateExistingTasks = async () => {
+  const tasks = await Task.find().sort({ _id: 1 });
+  for (let i = 0; i < tasks.length; i++) {
+    if (tasks[i].index === undefined) {
+      tasks[i].index = i;
+      await tasks[i].save();
+    }
+  }
+  console.log("Existing tasks updated with index values.");
+};
+// Call this function once when the server starts
+updateExistingTasks();
 
 // Rename a task
 app.put("/api/tasks/:id", async (req, res) => {
