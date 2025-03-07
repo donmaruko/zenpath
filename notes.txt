@@ -1,28 +1,32 @@
-codebase and directories:
+codebase, directories, and files:
 
-fullstack
+zenpath
     - client
         - node_modules
         - public
         - src
             - assets
-            App.css
-            App.jsx
-            index.css
-            main.jsx
-        .gitignore
-        eslient.config.js
-        index.html
-        package-lock.json
-        package.json
-        README.md
-        vite.config.js
+            - App.css
+            - App.tsx
+            - index.css
+            - main.tsx
+        - .gitignore
+        - eslient.config.js
+        - index.html
+        - package-lock.json
+        - package.json
+        - README.md
+        - tsconfig.json
+        - vite.config.js
+    - node_modules
     - server
         - node_modules
-        .env
-        package-lock.json
-        package.json
-        server.js
+        - src
+            server.ts
+        - .env
+        - package-lock.json
+        - package.json
+        - tsconfig.json
     - .gitignore
     - notes.txt
     - package-lock.json

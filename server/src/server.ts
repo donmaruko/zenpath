@@ -1,12 +1,12 @@
-const express = require("express");
-const path = require("path");
-const cors = require("cors");
-const mongoose = require("mongoose");
+import express, { Request, Response, RequestHandler } from "express";
+import path from "path";
+import cors from "cors";
+import mongoose from "mongoose";
+import http from "http";
+import { Server } from "socket.io";
+import dotenv from "dotenv";
 
-const http = require("http");
-const { Server } = require("socket.io");
-
-require("dotenv").config();
+dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
@@ -17,26 +17,36 @@ const io = new Server(server, {
 });
 const PORT = process.env.PORT || 8080;
 const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
+  throw new Error("MONGO_URI is not defined in the environment variables");
+}
 
 // Middleware
-app.use(cors({ origin: ["http://localhost:5173"] }));
+app.use(cors({ origin: ["http://localhost:5173", "http://127.0.0.1:5173"] }));
 app.use(express.json());
 
 // Connect to MongoDB
 mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Define Task Schema and Model
+interface ITask extends mongoose.Document {
+  text: string;
+  pinned: boolean;
+  category: string;
+  index: number;
+}
+
 const taskSchema = new mongoose.Schema({
   text: String,
   pinned: { type: Boolean, default: false },
   category: { type: String, default: "Uncategorized" },
-  index: { type: Number, unique: false } // 0-based index
+  index: { type: Number, unique: false }, // 0-based index
 });
 
-const Task = mongoose.model("Task", taskSchema);
+const Task = mongoose.model<ITask>("Task", taskSchema);
 
 // WebSocket Connection Handling
 io.on("connection", (socket) => {
@@ -56,7 +66,7 @@ const broadcastTasks = async () => {
 // Routes
 
 // Get all tasks
-app.get("/api/tasks", async (req, res) => {
+app.get("/api/tasks", async (req: Request, res: Response) => {
   try {
     const tasks = await Task.find().sort({ index: 1 });
     res.json({ tasks });
@@ -66,7 +76,7 @@ app.get("/api/tasks", async (req, res) => {
 });
 
 // Add a new task
-app.post("/api/tasks", async (req, res) => {
+app.post("/api/tasks", async (req: Request, res: Response) => {
   try {
     const { task, category } = req.body;
     const taskCount = await Task.countDocuments();
@@ -86,12 +96,12 @@ app.post("/api/tasks", async (req, res) => {
 const reindexTasks = async () => {
   const tasks = await Task.find().sort({ index: 1 }); // Get all tasks sorted
   for (let i = 0; i < tasks.length; i++) {
-    tasks[i].index = i;  // Assign new index values
+    tasks[i].index = i; // Assign new index values
     await tasks[i].save();
   }
 };
 
-app.delete("/api/tasks/:id", async (req, res) => {
+app.delete("/api/tasks/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await Task.findByIdAndDelete(id);
@@ -117,7 +127,7 @@ const updateExistingTasks = async () => {
 updateExistingTasks();
 
 // Rename a task
-app.put("/api/tasks/:id", async (req, res) => {
+app.put("/api/tasks/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { task } = req.body;
@@ -130,19 +140,25 @@ app.put("/api/tasks/:id", async (req, res) => {
 });
 
 // Toggle pin status
-app.put("/api/tasks/:id/pin", async (req, res) => {
+const togglePin: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const task = await Task.findById(id);
+    if (!task) {
+      res.status(404).json({ error: "Task not found" });
+      return;
+    }
     task.pinned = !task.pinned;
     await task.save();
     res.json({ message: "Pin status toggled", task });
   } catch (err) {
     res.status(500).json({ error: "Error toggling pin status" });
   }
-});
+};
+app.put("/api/tasks/:id/pin", togglePin);
 
-app.put("/api/tasks/:id/category", async (req, res) => {
+
+app.put("/api/tasks/:id/category", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { category } = req.body;
