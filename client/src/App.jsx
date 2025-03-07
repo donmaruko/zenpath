@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
+import io from "socket.io-client";
 import axios from "axios";
+
+const socket = io("http://localhost:8080"); // websocket connection
 
 function App() {
   const [count, setCount] = useState(0);
@@ -18,12 +21,6 @@ function App() {
   const [customCategory, setCustomCategory] = useState(""); // User inputted category
   const categories = ["Work", "Personal", "Study", "Custom"]; // Default categories
 
-  const fetchAPI = async () => { // part of testing
-    const response = await axios.get("http://localhost:8080/api");
-    setArray(response.data.fruits);
-    console.log(response.data.fruits);
-  };
-
   // fetch tasks from backend
   const fetchTasks = async () => {
     const response = await axios.get("http://localhost:8080/api/tasks");
@@ -34,17 +31,16 @@ function App() {
   const addTask = async () => {
     const categoryToUse = selectedCategory === "Custom" ? customCategory : selectedCategory;
     if (!newTask.trim()) return alert("Task cannot be empty!");
-  
-    const response = await axios.post("http://localhost:8080/api/tasks", { 
-      task: newTask, 
-      category: categoryToUse 
+
+    await axios.post("http://localhost:8080/api/tasks", {
+      task: newTask,
+      category: categoryToUse,
     });
-  
-    setTasks([...tasks, response.data.task]);
+
     setNewTask("");
-    setSelectedCategory(""); 
+    setSelectedCategory("");
     setCustomCategory("");
-  };  
+  };
 
   // delete a task
   const deleteTask = async (id) => {
@@ -62,7 +58,7 @@ function App() {
     // Reset editing state immediately before making the API call
     setEditingIndex(null);
   
-    const response = await axios.put(`http://localhost:8080/api/tasks/${id}`, { task: newName });
+    await axios.put(`http://localhost:8080/api/tasks/${id}`, { task: newName });
     setTasks(tasks.map((task) => (task._id === id ? response.data.task : task)));
     setEditTaskName("");  // Clear the input field
   };
@@ -74,9 +70,19 @@ function App() {
   };  
   
   // fetch tasks when the component mounts (on page load/refresh)
+  // Listen for real-time updates
   useEffect(() => {
-      fetchTasks();
-  }, []); // empty arr ensures this effect runs only once
+    fetchTasks();
+
+    // Listen for task updates via WebSocket
+    socket.on("tasksUpdated", (updatedTasks) => {
+      setTasks(updatedTasks);
+    });
+
+    return () => {
+      socket.off("tasksUpdated"); // Cleanup listener when component unmounts
+    };
+  }, []);
 
   return (
     <div>
